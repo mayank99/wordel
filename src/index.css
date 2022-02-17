@@ -1,0 +1,16 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  color-scheme: dark light;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  display: grid;
+  place-content: center;
+}

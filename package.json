@@ -1,0 +1,20 @@
+{
+  "name": "wordle-clone",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@prefresh/vite": "^2.2.6",
+    "preact": "^10.5.15"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.1.5",
+    "postcss-preset-env": "^7.4.0",
+    "typescript": "^4.5.4",
+    "vite": "^2.8.0"
+  }
+}
