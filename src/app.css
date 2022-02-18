@@ -27,7 +27,7 @@ h1 {
   --letter-bg-misplaced: hsl(50 50% 50% / 0.4);
 
   &[data-state='empty'] {
-    border: 1px solid hsl(0 0% 100% / 0.3);
+    border: 1px solid hsl(0 0% 50% / 0.7);
   }
 
   &[data-state='active'] {
@@ -45,4 +45,18 @@ h1 {
   &[data-state='misplaced'] {
     background-color: var(--letter-bg-misplaced);
   }
+}
+
+.Toast {
+  position: fixed;
+  top: 10vh;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  background-color: hsl(0 0% 50% / 0.3);
+  border-radius: 0.5rem;
 }

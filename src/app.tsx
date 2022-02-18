@@ -1,5 +1,7 @@
 import { ComponentProps, createContext } from 'preact';
-import { StateUpdater, useContext, useEffect, useState } from 'preact/hooks';
+import { StateUpdater, useCallback, useContext, useEffect, useRef, useState } from 'preact/hooks';
+import { dictionary } from './dictionary';
+import { answerList } from './answerList';
 import './app.css';
 
 export const App = () => {
@@ -34,7 +36,13 @@ const useTheme = () => {
 };
 
 const GameContext = createContext<
-  { answer: string; guesses: string[]; setGuesses: StateUpdater<string[]> } | undefined
+  | {
+      answer: string;
+      guesses: string[];
+      setGuesses: StateUpdater<string[]>;
+      showToast: () => void;
+    }
+  | undefined
 >(undefined);
 
 const useGameContext = () => {
@@ -46,13 +54,40 @@ const useGameContext = () => {
 };
 
 const Game = () => {
-  const [answer] = useState('arsed');
   const [guesses, setGuesses] = useState<string[]>([]);
 
+  const [answer, setAnswer] = useState('arsed');
+  useEffect(() => {
+    // 0-based index starts on Feb 17, 2022
+    const origin = new Date(2022, 1, 17).getTime();
+    const today = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
+    const days = Math.floor((today - origin) / (1000 * 60 * 60 * 24));
+    setAnswer(answerList[days]);
+  }, []);
+
+  const [isToastVisible, setIsToastVisible] = useState(false);
+  const toastInterval = useRef<number | undefined>(undefined);
+  const showToast = () => {
+    setIsToastVisible(true);
+    clearTimeout(toastInterval.current);
+    toastInterval.current = setTimeout(() => {
+      setIsToastVisible(false);
+    }, 5000);
+  };
+
   return (
-    <GameContext.Provider value={{ answer, guesses, setGuesses }}>
+    <GameContext.Provider value={{ answer, guesses, setGuesses, showToast }}>
+      {isToastVisible && <Toast />}
       <WordsGrid />
     </GameContext.Provider>
+  );
+};
+
+const Toast = () => {
+  return (
+    <output class='Toast' role='status'>
+      Not in word list
+    </output>
   );
 };
 
@@ -62,14 +97,18 @@ const WordsGrid = () => {
   return (
     <div class='WordsGrid'>
       {[...Array(6)].map((_, i) => (
-        <WordGuess key={i} guess={guesses[i]} isActive={i === guesses.length && answer !== guesses[i - 1]} />
+        <WordGuess
+          key={i}
+          guess={guesses[i]}
+          isActive={i === guesses.length && answer !== guesses[Math.max(0, i - 1)]}
+        />
       ))}
     </div>
   );
 };
 
 const WordGuess = ({ guess, isActive = false }: { guess?: string; isActive?: boolean }) => {
-  const { answer, setGuesses } = useGameContext();
+  const { answer, setGuesses, showToast } = useGameContext();
   const [currentGuess, setCurrentGuess] = useState('');
   const [activeLetterIndex, setActiveLetterIndex] = useState(0);
 
@@ -86,6 +125,11 @@ const WordGuess = ({ guess, isActive = false }: { guess?: string; isActive?: boo
           setCurrentGuess((old) => old.slice(0, -1));
           setActiveLetterIndex((old) => Math.max(0, old - 1));
         } else if (key === 'Enter' && activeLetterIndex === 5) {
+          if (!dictionary.includes(currentGuess)) {
+            console.log('Boo!');
+            showToast();
+            return;
+          }
           setGuesses((old) => [...old, currentGuess]);
           setCurrentGuess('');
           setActiveLetterIndex(0);
@@ -94,28 +138,30 @@ const WordGuess = ({ guess, isActive = false }: { guess?: string; isActive?: boo
       document.addEventListener('keydown', handleKeyDown);
       return () => document.removeEventListener('keydown', handleKeyDown);
     }
-  }, [answer, isActive, activeLetterIndex]);
+  }, [answer, isActive, activeLetterIndex, currentGuess]);
 
   return (
     <div class='WordGuess'>
       {[...Array(5)].map((_, i) => {
-        const checkLetter = (letter: string) => {
-          if (!guess || !answer) return;
+        const letterState = ((letter: string) => {
+          if (isActive) {
+            return 'active';
+          }
+
+          if (!guess || !answer || !letter) return 'empty';
+
           const isDuplicateLetter = [...guess].filter((l) => l === letter).length > 1;
-          const hasMultiple = [...answer].filter((l) => l === letter).length > 1;
+          const answerHasMultiple = [...answer].filter((l) => l === letter).length > 1;
 
-          return answer[i] === letter
-            ? 'correct'
-            : !answer.includes(letter)
-            ? 'wrong'
-            : !isDuplicateLetter
-            ? 'misplaced'
-            : hasMultiple
-            ? 'misplaced'
-            : 'wrong';
-        };
+          if (!answer.includes(letter) || (isDuplicateLetter && answerHasMultiple)) {
+            return 'wrong';
+          } else if (answer[i] === letter) {
+            return 'correct';
+          } else {
+            return 'misplaced';
+          }
+        })(guess?.[i] ?? '');
 
-        const letterState = isActive ? 'active' : !!guess?.[i] ? checkLetter(guess[i]) : 'empty';
         return (
           <Letter key={i} state={letterState}>
             {currentGuess[i] ?? guess?.[i]}
