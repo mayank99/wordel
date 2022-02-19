@@ -67,13 +67,13 @@ const Game = () => {
 
   const [isToastVisible, setIsToastVisible] = useState(false);
   const toastInterval = useRef<number | undefined>(undefined);
-  const showToast = () => {
+  const showToast = useCallback(() => {
     setIsToastVisible(true);
     clearTimeout(toastInterval.current);
     toastInterval.current = setTimeout(() => {
       setIsToastVisible(false);
     }, 5000);
-  };
+  }, []);
 
   return (
     <GameContext.Provider value={{ answer, guesses, setGuesses, showToast }}>
@@ -84,15 +84,36 @@ const Game = () => {
 };
 
 const Toast = () => {
+  const { answer, guesses } = useGameContext();
+
+  const resultMessages = [
+    'Are you sure you are human?',
+    'Show-off!',
+    'You are a human!',
+    'Not bad',
+    'That was okay, I guess',
+    'Phew',
+  ];
+
   return (
     <output class='Toast' role='status'>
-      Not in word list
+      {guesses[Math.max(guesses.length - 1, 0)] === answer
+        ? resultMessages[guesses.length - 1]
+        : guesses.length === 6
+        ? `it was ${answer.toUpperCase()} smh`
+        : 'Not in word list'}
     </output>
   );
 };
 
 const WordsGrid = () => {
-  const { answer, guesses } = useGameContext();
+  const { answer, guesses, showToast } = useGameContext();
+
+  useEffect(() => {
+    if (guesses[Math.max(guesses.length - 1, 0)] === answer || guesses.length === 6) {
+      showToast();
+    }
+  }, [answer, guesses, showToast]);
 
   return (
     <div class='WordsGrid'>
