@@ -126,7 +126,6 @@ const WordGuess = ({ guess, isActive = false }: { guess?: string; isActive?: boo
           setActiveLetterIndex((old) => Math.max(0, old - 1));
         } else if (key === 'Enter' && activeLetterIndex === 5) {
           if (!dictionary.includes(currentGuess)) {
-            console.log('Boo!');
             showToast();
             return;
           }
@@ -138,7 +137,7 @@ const WordGuess = ({ guess, isActive = false }: { guess?: string; isActive?: boo
       document.addEventListener('keydown', handleKeyDown);
       return () => document.removeEventListener('keydown', handleKeyDown);
     }
-  }, [answer, isActive, activeLetterIndex, currentGuess]);
+  }, [answer, isActive, activeLetterIndex, currentGuess, showToast]);
 
   return (
     <div class='WordGuess'>
@@ -153,12 +152,12 @@ const WordGuess = ({ guess, isActive = false }: { guess?: string; isActive?: boo
           const isDuplicateLetter = [...guess].filter((l) => l === letter).length > 1;
           const answerHasMultiple = [...answer].filter((l) => l === letter).length > 1;
 
-          if (!answer.includes(letter) || (isDuplicateLetter && answerHasMultiple)) {
-            return 'wrong';
-          } else if (answer[i] === letter) {
+          if (answer[i] === letter) {
             return 'correct';
-          } else {
+          } else if (answer.includes(letter) && (!isDuplicateLetter || answerHasMultiple)) {
             return 'misplaced';
+          } else {
+            return 'wrong';
           }
         })(guess?.[i] ?? '');
 
