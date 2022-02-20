@@ -60,3 +60,15 @@ h1 {
   background-color: hsl(0 0% 50% / 0.3);
   border-radius: 0.5rem;
 }
+
+.ResultDialog {
+  position: fixed;
+  inset: 0;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.Timer {
+  font-size: 2rem;
+}

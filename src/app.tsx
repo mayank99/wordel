@@ -41,6 +41,8 @@ const GameContext = createContext<
       guesses: string[];
       setGuesses: StateUpdater<string[]>;
       showToast: () => void;
+      gameState: 'won' | 'lost' | 'pending';
+      setGameState: StateUpdater<'won' | 'lost' | 'pending'>;
     }
   | undefined
 >(undefined);
@@ -55,6 +57,7 @@ const useGameContext = () => {
 
 const Game = () => {
   const [guesses, setGuesses] = useState<string[]>([]);
+  const [gameState, setGameState] = useState<'won' | 'lost' | 'pending'>('pending');
 
   const [answer, setAnswer] = useState('arsed');
   useEffect(() => {
@@ -75,21 +78,46 @@ const Game = () => {
     }, 5000);
   }, []);
 
+  useEffect(() => {
+    if (gameState === 'won') {
+      const stored = localStorage.getItem('distribution');
+      const oldDistribution = stored ? JSON.parse(stored) : Object.fromEntries([...Array(6)].map((_, i) => [i + 1, 0]));
+      const newDistribution = { ...oldDistribution, [guesses.length]: Number(oldDistribution[guesses.length]) + 1 };
+      localStorage.setItem('distribution', JSON.stringify(newDistribution));
+
+      const oldStreak = Number(localStorage.getItem('streak'));
+      localStorage.setItem('streak', String(oldStreak + 1));
+
+      const oldMaxStreak = Number(localStorage.getItem('maxStreak'));
+      localStorage.setItem('maxStreak', String(Math.max(oldMaxStreak, oldStreak + 1)));
+
+      const oldGamesPlayed = Number(localStorage.getItem('gamesPlayed'));
+      localStorage.setItem('gamesPlayed', String(oldGamesPlayed + 1));
+
+      const oldGamesWon = Number(localStorage.getItem('gamesWon'));
+      localStorage.setItem('gamesWon', String(oldGamesWon + 1));
+    } else if (gameState === 'lost') {
+      localStorage.setItem('streak', '0');
+      localStorage.setItem('gamesPlayed', String(Number(localStorage.getItem('gamesPlayed')) + 1));
+    }
+  }, [gameState, guesses.length]);
+
   return (
-    <GameContext.Provider value={{ answer, guesses, setGuesses, showToast }}>
+    <GameContext.Provider value={{ answer, guesses, setGuesses, showToast, gameState, setGameState }}>
       {isToastVisible && <Toast />}
       <WordsGrid />
+      <ResultDialog />
     </GameContext.Provider>
   );
 };
 
 const Toast = () => {
-  const { answer, guesses } = useGameContext();
+  const { answer, guesses, gameState } = useGameContext();
 
   const resultMessages = [
     'Are you sure you are human?',
     'Show-off!',
-    'You are a human!',
+    'You *are* a human!',
     'Not bad',
     'That was okay, I guess',
     'Phew',
@@ -97,23 +125,76 @@ const Toast = () => {
 
   return (
     <output class='Toast' role='status'>
-      {guesses[Math.max(guesses.length - 1, 0)] === answer
+      {gameState === 'won'
         ? resultMessages[guesses.length - 1]
-        : guesses.length === 6
+        : gameState === 'lost'
         ? `it was ${answer.toUpperCase()} smh`
         : 'Not in word list'}
     </output>
   );
 };
 
-const WordsGrid = () => {
-  const { answer, guesses, showToast } = useGameContext();
+const ResultDialog = () => {
+  const { gameState } = useGameContext();
+  const [isOpen, setIsOpen] = useState(() => gameState !== 'pending');
 
   useEffect(() => {
-    if (guesses[Math.max(guesses.length - 1, 0)] === answer || guesses.length === 6) {
+    setIsOpen(gameState !== 'pending');
+  }, [gameState]);
+
+  return isOpen ? (
+    <dialog class='ResultDialog' open={isOpen}>
+      <button onClick={() => setIsOpen(false)}>❌</button>
+      <h2>Guess distribution</h2>
+      <Distribution />
+
+      <h2>Next wordle</h2>
+      <Timer />
+    </dialog>
+  ) : null;
+};
+
+const Distribution = () => <></>;
+
+const Timer = () => {
+  const getTimeDiff = () => {
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 24);
+    const diff = tomorrow.getTime() - now.getTime();
+
+    const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
+    const minutes = String(Math.floor(diff / (1000 * 60)) % 60).padStart(2, '0');
+    const seconds = String(Math.floor(diff / 1000) % 60).padStart(2, '0');
+
+    return [hours, minutes, seconds];
+  };
+  const [time, setTime] = useState(() => getTimeDiff());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(getTimeDiff());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div class='Timer'>
+      {time[0]}:{time[1]}:{time[2]}
+    </div>
+  );
+};
+
+const WordsGrid = () => {
+  const { answer, guesses, showToast, setGameState } = useGameContext();
+
+  useEffect(() => {
+    if (guesses[Math.max(guesses.length - 1, 0)] === answer) {
+      setGameState('won');
       showToast();
+    } else if (guesses.length === 6) {
+      setGameState('lost');
     }
-  }, [answer, guesses, showToast]);
+  }, [answer, guesses, showToast, setGameState]);
 
   return (
     <div class='WordsGrid'>
@@ -158,7 +239,7 @@ const WordGuess = ({ guess, isActive = false }: { guess?: string; isActive?: boo
       document.addEventListener('keydown', handleKeyDown);
       return () => document.removeEventListener('keydown', handleKeyDown);
     }
-  }, [answer, isActive, activeLetterIndex, currentGuess, showToast]);
+  }, [answer, isActive, activeLetterIndex, currentGuess, showToast, setGuesses]);
 
   return (
     <div class='WordGuess'>
@@ -177,9 +258,8 @@ const WordGuess = ({ guess, isActive = false }: { guess?: string; isActive?: boo
             return 'correct';
           } else if (answer.includes(letter) && (!isDuplicateLetter || answerHasMultiple)) {
             return 'misplaced';
-          } else {
-            return 'wrong';
           }
+          return 'wrong';
         })(guess?.[i] ?? '');
 
         return (
