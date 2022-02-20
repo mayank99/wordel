@@ -10,7 +10,9 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
-  rules: {},
+  rules: {
+    'no-unused-vars': 'warn',
+  },
   settings: {
     jest: {
       version: 28,
