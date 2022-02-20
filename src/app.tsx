@@ -1,4 +1,4 @@
-import { ComponentProps, createContext } from 'preact';
+import { ComponentProps, Context, createContext } from 'preact';
 import { StateUpdater, useCallback, useContext, useEffect, useRef, useState } from 'preact/hooks';
 import { dictionary } from './dictionary';
 import { answerList } from './answerList';
@@ -35,6 +35,19 @@ const useTheme = () => {
   return theme;
 };
 
+const useStoredState = <T,>(key: string, defaultValue: T) => {
+  const [value, setValue] = useState<T>(() => {
+    const saved = localStorage.getItem(key);
+    return saved ? JSON.parse(saved) : defaultValue;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(key, JSON.stringify(value));
+  }, [key, value]);
+
+  return [value, setValue] as const;
+};
+
 const GameContext = createContext<
   | {
       answer: string;
@@ -46,18 +59,39 @@ const GameContext = createContext<
     }
   | undefined
 >(undefined);
+GameContext.displayName = 'GameContext';
 
-const useGameContext = () => {
-  const value = useContext(GameContext);
-  if (value === undefined) {
-    throw new Error('useGameContext must be used within a GameContext provider');
+const GameStatsContext = createContext<
+  | {
+      streak: number;
+      maxStreak: number;
+      gamesPlayed: number;
+      gamesWon: number;
+      distribution: { [key: string]: number };
+    }
+  | undefined
+>(undefined);
+GameStatsContext.displayName = 'GameStatsContext';
+
+const useSafeContext = <T,>(context: Context<T>) => {
+  const value = useContext(context);
+  if (value == undefined) {
+    throw new Error(`${context.displayName} must be used inside ${context.displayName}.Provider`);
   }
-  return value;
+  return value!; // this cannot be undefined, so we can destructure from it
 };
 
 const Game = () => {
-  const [guesses, setGuesses] = useState<string[]>([]);
-  const [gameState, setGameState] = useState<'won' | 'lost' | 'pending'>('pending');
+  const [guesses, setGuesses] = useStoredState<string[]>('guesses', []);
+  const [gameState, setGameState] = useStoredState<'won' | 'lost' | 'pending'>('gameState', 'pending');
+  const [streak, setStreak] = useStoredState<number>('streak', 0);
+  const [maxStreak, setMaxStreak] = useStoredState<number>('maxStreak', 0);
+  const [gamesPlayed, setGamesPlayed] = useStoredState<number>('gamesPlayed', 0);
+  const [gamesWon, setGamesWon] = useStoredState<number>('gamesWon', 0);
+  const [distribution, setDistribution] = useStoredState(
+    'distribution',
+    Object.fromEntries([...Array(6)].map((_, i) => [i + 1, 0]))
+  );
 
   const [answer, setAnswer] = useState('arsed');
   useEffect(() => {
@@ -80,39 +114,30 @@ const Game = () => {
 
   useEffect(() => {
     if (gameState === 'won') {
-      const stored = localStorage.getItem('distribution');
-      const oldDistribution = stored ? JSON.parse(stored) : Object.fromEntries([...Array(6)].map((_, i) => [i + 1, 0]));
-      const newDistribution = { ...oldDistribution, [guesses.length]: Number(oldDistribution[guesses.length]) + 1 };
-      localStorage.setItem('distribution', JSON.stringify(newDistribution));
-
-      const oldStreak = Number(localStorage.getItem('streak'));
-      localStorage.setItem('streak', String(oldStreak + 1));
-
-      const oldMaxStreak = Number(localStorage.getItem('maxStreak'));
-      localStorage.setItem('maxStreak', String(Math.max(oldMaxStreak, oldStreak + 1)));
-
-      const oldGamesPlayed = Number(localStorage.getItem('gamesPlayed'));
-      localStorage.setItem('gamesPlayed', String(oldGamesPlayed + 1));
-
-      const oldGamesWon = Number(localStorage.getItem('gamesWon'));
-      localStorage.setItem('gamesWon', String(oldGamesWon + 1));
+      setStreak((old) => old + 1);
+      setMaxStreak((old) => Math.max(old, streak + 1));
+      setGamesPlayed((old) => old + 1);
+      setGamesWon((old) => old + 1);
+      setDistribution((old) => ({ ...old, [guesses.length]: Number(old[guesses.length]) + 1 }));
     } else if (gameState === 'lost') {
-      localStorage.setItem('streak', '0');
-      localStorage.setItem('gamesPlayed', String(Number(localStorage.getItem('gamesPlayed')) + 1));
+      setStreak(0);
+      setGamesPlayed((old) => old + 1);
     }
-  }, [gameState, guesses.length]);
+  }, [gameState, guesses.length, setDistribution, setGamesPlayed, setGamesWon, setMaxStreak, setStreak, streak]);
 
   return (
     <GameContext.Provider value={{ answer, guesses, setGuesses, showToast, gameState, setGameState }}>
       {isToastVisible && <Toast />}
-      <WordsGrid />
-      <ResultDialog />
+      <GameStatsContext.Provider value={{ streak, maxStreak, gamesPlayed, gamesWon, distribution }}>
+        <WordsGrid />
+        <ResultDialog />
+      </GameStatsContext.Provider>
     </GameContext.Provider>
   );
 };
 
 const Toast = () => {
-  const { answer, guesses, gameState } = useGameContext();
+  const { answer, guesses, gameState } = useSafeContext(GameContext);
 
   const resultMessages = [
     'Are you sure you are human?',
@@ -135,7 +160,7 @@ const Toast = () => {
 };
 
 const ResultDialog = () => {
-  const { gameState } = useGameContext();
+  const { gameState } = useSafeContext(GameContext);
   const [isOpen, setIsOpen] = useState(() => gameState !== 'pending');
 
   useEffect(() => {
@@ -154,7 +179,10 @@ const ResultDialog = () => {
   ) : null;
 };
 
-const Distribution = () => <></>;
+const Distribution = () => {
+  const { distribution } = useSafeContext(GameStatsContext);
+  return <pre>{JSON.stringify(distribution, null, 2)}</pre>;
+};
 
 const Timer = () => {
   const getTimeDiff = () => {
@@ -185,7 +213,7 @@ const Timer = () => {
 };
 
 const WordsGrid = () => {
-  const { answer, guesses, showToast, setGameState } = useGameContext();
+  const { answer, guesses, showToast, setGameState } = useSafeContext(GameContext);
 
   useEffect(() => {
     if (guesses[Math.max(guesses.length - 1, 0)] === answer) {
@@ -210,7 +238,7 @@ const WordsGrid = () => {
 };
 
 const WordGuess = ({ guess, isActive = false }: { guess?: string; isActive?: boolean }) => {
-  const { answer, setGuesses, showToast } = useGameContext();
+  const { answer, setGuesses, showToast } = useSafeContext(GameContext);
   const [currentGuess, setCurrentGuess] = useState('');
   const [activeLetterIndex, setActiveLetterIndex] = useState(0);
 
@@ -279,7 +307,7 @@ const Letter = ({
 }: { state?: 'empty' | 'active' | 'wrong' | 'misplaced' | 'correct' } & ComponentProps<'div'>) => {
   return (
     <div class='Letter' data-state={state} {...rest}>
-      <span>{children}</span>
+      {children}
     </div>
   );
 };
