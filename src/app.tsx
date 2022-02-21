@@ -116,9 +116,14 @@ const Game = () => {
     }
   }, [answer, guesses, setAnswer, setGameState, setGuesses, setStreak]);
 
+  const justMounted = useRef(true);
+
   const [isToastVisible, setIsToastVisible] = useState(false);
   const toastInterval = useRef<number | undefined>(undefined);
   const showToast = useCallback(() => {
+    if (justMounted.current) {
+      return;
+    }
     setIsToastVisible(true);
     clearTimeout(toastInterval.current);
     toastInterval.current = setTimeout(() => {
@@ -126,7 +131,6 @@ const Game = () => {
     }, 5000);
   }, []);
 
-  const justMounted = useRef(true);
   useEffect(() => {
     if (justMounted.current) {
       justMounted.current = false;
@@ -190,11 +194,19 @@ declare interface HTMLDialogElement extends HTMLElement {
 const ResultDialog = () => {
   const { gameState } = useSafeContext(GameContext);
   const { gamesPlayed, gamesWon, streak, maxStreak } = useSafeContext(GameStatsContext);
-  const [isOpen, setIsOpen] = useState(() => gameState !== 'pending');
+  const [isOpen, setIsOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
+  const justMounted = useRef(true);
   useEffect(() => {
-    setIsOpen(gameState !== 'pending');
+    let delay = gameState === 'won' ? 1500 : 3500;
+    if (justMounted.current) {
+      delay = 500;
+      justMounted.current = false;
+    }
+    setTimeout(() => {
+      setIsOpen(gameState !== 'pending');
+    }, delay);
   }, [gameState]);
 
   useEffect(() => {
@@ -205,45 +217,48 @@ const ResultDialog = () => {
     }
   }, [isOpen]);
 
-  return isOpen ? (
-    <dialog class='ResultDialog' ref={dialogRef}>
+  return (
+    <dialog class='ResultDialog' ref={dialogRef} hidden={!isOpen ? true : undefined} open={undefined}>
       <button class='ResultDialog__Close' onClick={() => setIsOpen(false)} aria-label='Close dialog' />
+      {isOpen && (
+        <>
+          <article>
+            <h2>Statistics</h2>
+            <section class='ResultDialog__Stats'>
+              <div>
+                {gamesPlayed} {'\n'} played
+              </div>
+              <div>
+                {Number((gamesWon / Math.max(gamesPlayed, 1)) * 100).toFixed(0)} {'\n'} win %
+              </div>
+              <div>
+                {streak} {'\n'} current streak
+              </div>
+              <div>
+                {maxStreak} {'\n'} max streak
+              </div>
+            </section>
+          </article>
 
-      <article>
-        <h2>Statistics</h2>
-        <section class='ResultDialog__Stats'>
-          <div>
-            {gamesPlayed} {'\n'} played
-          </div>
-          <div>
-            {Number((gamesWon / Math.max(gamesPlayed, 1)) * 100).toFixed(0)} {'\n'} win %
-          </div>
-          <div>
-            {streak} {'\n'} current streak
-          </div>
-          <div>
-            {maxStreak} {'\n'} max streak
-          </div>
-        </section>
-      </article>
+          <article>
+            <h2>Guess distribution</h2>
+            <Distribution />
+          </article>
 
-      <article>
-        <h2>Guess distribution</h2>
-        <Distribution />
-      </article>
+          <article>
+            <h2>Next wordel</h2>
+            <Timer />
+          </article>
 
-      <article>
-        <h2>Next wordel</h2>
-        <Timer />
-      </article>
-
-      <ResultDialogActionButtons />
+          <ResultDialogActionButtons />
+        </>
+      )}
     </dialog>
-  ) : null;
+  );
 };
 
 const Distribution = () => {
-  const { guesses } = useSafeContext(GameContext);
+  const { gameState, guesses } = useSafeContext(GameContext);
   const { distribution } = useSafeContext(GameStatsContext);
 
   const maxFreq = Math.max(...Object.values(distribution));
@@ -256,7 +271,7 @@ const Distribution = () => {
             {guessCount} <span class='VisuallyHidden'>guesses</span>
           </dt>
           <dd
-            data-current={guesses.length === Number(guessCount) ? 'true' : undefined}
+            data-current={gameState === 'won' && guesses.length === Number(guessCount) ? 'true' : undefined}
             style={{ maxWidth: `${Number((frequency / maxFreq) * 100).toFixed(0)}%` }}
           >
             {frequency} <span class='VisuallyHidden'>times</span>
@@ -325,6 +340,7 @@ const WordsGrid = () => {
       showToast();
     } else if (guesses.length === 6) {
       setGameState('lost');
+      showToast();
     }
   }, [answer, guesses, showToast, setGameState]);
 

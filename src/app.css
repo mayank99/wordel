@@ -61,7 +61,18 @@ h1 {
   border-radius: 0.5rem;
 }
 
+@keyframes slide-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
 .ResultDialog {
+  &[hidden],
+  &:not([open]) {
+    display: none;
+  }
+
   position: fixed;
   inset: 0;
   display: flex;
@@ -70,10 +81,13 @@ h1 {
   border: none;
   border-radius: 0.5rem;
   padding: 1.5rem;
-  width: clamp(15rem, 100vw, 25rem);
+  width: clamp(15rem, 95vw, 25rem);
   box-shadow: 0 0 0.25rem hsl(0 0% 0% / 0.5);
   backdrop-filter: blur(0.5rem);
   background: var(--dialog-bg);
+  @media (prefers-reduced-motion: no-preference) {
+    animation: slide-in 0.5s ease-in-out;
+  }
 
   --dialog-bg: hsl(0 0% 70% / 0.5);
   --backdrop-bg: initial;
