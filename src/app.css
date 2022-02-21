@@ -5,12 +5,12 @@ h1 {
 
 .WordsGrid {
   display: grid;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .WordGuess {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .Letter {
@@ -64,11 +64,134 @@ h1 {
 .ResultDialog {
   position: fixed;
   inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-items: center;
   border: none;
   border-radius: 0.5rem;
-  padding: 1rem;
+  padding: 1.5rem;
+  width: clamp(15rem, 100vw, 25rem);
+  box-shadow: 0 0 0.25rem hsl(0 0% 0% / 0.5);
+  backdrop-filter: blur(0.5rem);
+  background: var(--dialog-bg);
+
+  --dialog-bg: hsl(0 0% 70% / 0.5);
+  --backgrop-bg: initial;
+
+  @nest [data-theme='dark'] & {
+    --dialog-bg: hsl(0 0% 15% / 0.8);
+  }
+
+  @supports not (backdrop-filter: blur(0.25rem)) {
+    --backdrop-bg: hsl(0 0% 0% / 0.5);
+    --dialog-bg: Canvas;
+    color: currentColor;
+  }
+
+  &::backdrop {
+    background: var(--backgrop-bg);
+    backdrop-filter: blur(0.25rem);
+  }
+
+  & > article {
+    display: grid;
+    justify-items: center;
+
+    & > h2 {
+      font-size: 1.25rem;
+      margin-block: 0;
+      font-weight: normal;
+      text-transform: uppercase;
+    }
+
+    & + article {
+      margin-block-start: 0.75rem;
+
+      &::before {
+        content: '';
+        margin-block-end: 0.75rem;
+        border-top: 1px solid hsl(0 50% 0% / 0.4);
+        width: 80%;
+      }
+    }
+  }
+}
+
+.ResultDialog__Stats {
+  display: flex;
+  justify-content: center;
+
+  & > * {
+    text-align: center;
+    max-width: 8ch;
+    overflow-wrap: break-word;
+    font-size: 0.875rem;
+    line-height: 1.1;
+
+    &::first-line {
+      font-size: 2rem;
+      line-height: 1.5;
+    }
+  }
+}
+
+.ResultDialog__Close {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  height: 2.5rem;
+  width: 2.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+
+  &:hover {
+    background: hsl(0 0% 50% / 0.3);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0.5rem;
+    background-color: currentColor;
+    mask: url('https://api.iconify.design/fe:close.svg?color=currentColor') no-repeat center center / contain;
+  }
 }
 
 .Timer {
   font-size: 2rem;
+}
+
+.Distribution {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem;
+  justify-self: stretch;
+  padding-inline: 2rem;
+
+  & > :nth-child(even) {
+    min-width: 2ch;
+    padding-inline: 0.25rem;
+    margin-inline: 0;
+    text-align: right;
+    background-color: var(--distribution-bar-bg);
+    border-radius: 1px;
+
+    --distribution-bar-bg: hsl(0 0% 50% / 0.3);
+
+    &[data-current='true'] {
+      --distribution-bar-bg: hsl(150 50% 30% / 0.4);
+    }
+  }
+}
+
+.VisuallyHidden {
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }

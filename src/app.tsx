@@ -1,4 +1,4 @@
-import { ComponentProps, Context, createContext } from 'preact';
+import { ComponentProps, Context, createContext, Fragment } from 'preact';
 import { StateUpdater, useCallback, useContext, useEffect, useRef, useState } from 'preact/hooks';
 import { dictionary } from './dictionary';
 import { answerList } from './answerList';
@@ -9,7 +9,7 @@ export const App = () => {
 
   return (
     <>
-      <h1>hello wordle</h1>
+      <h1>wordel</h1>
       <main>
         <Game />
       </main>
@@ -112,10 +112,15 @@ const Game = () => {
     }, 5000);
   }, []);
 
+  const justMounted = useRef(true);
   useEffect(() => {
+    if (justMounted.current) {
+      justMounted.current = false;
+      return;
+    }
+
     if (gameState === 'won') {
       setStreak((old) => old + 1);
-      setMaxStreak((old) => Math.max(old, streak + 1));
       setGamesPlayed((old) => old + 1);
       setGamesWon((old) => old + 1);
       setDistribution((old) => ({ ...old, [guesses.length]: Number(old[guesses.length]) + 1 }));
@@ -123,7 +128,11 @@ const Game = () => {
       setStreak(0);
       setGamesPlayed((old) => old + 1);
     }
-  }, [gameState, guesses.length, setDistribution, setGamesPlayed, setGamesWon, setMaxStreak, setStreak, streak]);
+  }, [gameState, guesses.length, setDistribution, setGamesPlayed, setGamesWon, setMaxStreak, setStreak]);
+
+  useEffect(() => {
+    setMaxStreak((old) => Math.max(old, streak));
+  }, [streak, setMaxStreak]);
 
   return (
     <GameContext.Provider value={{ answer, guesses, setGuesses, showToast, gameState, setGameState }}>
@@ -159,29 +168,87 @@ const Toast = () => {
   );
 };
 
+declare interface HTMLDialogElement extends HTMLElement {
+  showModal: () => void;
+  close: () => void;
+}
+
 const ResultDialog = () => {
   const { gameState } = useSafeContext(GameContext);
+  const { gamesPlayed, gamesWon, streak, maxStreak } = useSafeContext(GameStatsContext);
   const [isOpen, setIsOpen] = useState(() => gameState !== 'pending');
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     setIsOpen(gameState !== 'pending');
   }, [gameState]);
 
-  return isOpen ? (
-    <dialog class='ResultDialog' open={isOpen}>
-      <button onClick={() => setIsOpen(false)}>❌</button>
-      <h2>Guess distribution</h2>
-      <Distribution />
+  useEffect(() => {
+    if (isOpen) {
+      dialogRef.current?.showModal();
+    } else {
+      dialogRef.current?.close();
+    }
+  }, [isOpen]);
 
-      <h2>Next wordle</h2>
-      <Timer />
+  return isOpen ? (
+    <dialog class='ResultDialog' ref={dialogRef}>
+      <button class='ResultDialog__Close' onClick={() => setIsOpen(false)} aria-label='Close dialog' />
+
+      <article>
+        <h2>Statistics</h2>
+        <section class='ResultDialog__Stats'>
+          <div>
+            {gamesPlayed} {'\n'} played
+          </div>
+          <div>
+            {Number((gamesWon / gamesPlayed) * 100).toFixed(0)} {'\n'} win %
+          </div>
+          <div>
+            {streak} {'\n'} current streak
+          </div>
+          <div>
+            {maxStreak} {'\n'} max streak
+          </div>
+        </section>
+      </article>
+
+      <article>
+        <h2>Guess distribution</h2>
+        <Distribution />
+      </article>
+
+      <article>
+        <h2>Next wordel</h2>
+        <Timer />
+      </article>
     </dialog>
   ) : null;
 };
 
 const Distribution = () => {
+  const { guesses } = useSafeContext(GameContext);
   const { distribution } = useSafeContext(GameStatsContext);
-  return <pre>{JSON.stringify(distribution, null, 2)}</pre>;
+
+  const maxFreq = Math.max(...Object.values(distribution));
+
+  return (
+    <dl class='Distribution'>
+      {Object.entries(distribution).map(([guessCount, frequency]) => (
+        <Fragment key={guessCount}>
+          <dt>
+            {guessCount} <span class='VisuallyHidden'>guesses</span>
+          </dt>
+          <dd
+            data-current={guesses.length === Number(guessCount) ? 'true' : undefined}
+            style={{ maxWidth: `${Number((frequency / maxFreq) * 100).toFixed(0)}%` }}
+          >
+            {frequency} <span class='VisuallyHidden'>times</span>
+          </dd>
+        </Fragment>
+      ))}
+    </dl>
+  );
 };
 
 const Timer = () => {
