@@ -76,7 +76,7 @@ h1 {
   background: var(--dialog-bg);
 
   --dialog-bg: hsl(0 0% 70% / 0.5);
-  --backgrop-bg: initial;
+  --backdrop-bg: initial;
 
   @nest [data-theme='dark'] & {
     --dialog-bg: hsl(0 0% 15% / 0.8);
@@ -103,16 +103,21 @@ h1 {
       font-weight: normal;
       text-transform: uppercase;
     }
+  }
 
-    & + article {
-      margin-block-start: 0.75rem;
+  --divider-color: hsl(0 0% 0% / 0.4);
+  @nest [data-theme='dark'] & {
+    --divider-color: hsl(0 0% 50% / 0.4);
+  }
 
-      &::before {
-        content: '';
-        margin-block-end: 0.75rem;
-        border-top: 1px solid hsl(0 50% 0% / 0.4);
-        width: 80%;
-      }
+  & > * + * + * {
+    margin-block-start: 0.75rem;
+
+    &::before {
+      content: '';
+      margin-block-end: 0.75rem;
+      border: 0.5px solid var(--divider-color);
+      inline-size: 80%;
     }
   }
 }
@@ -159,6 +164,29 @@ h1 {
   }
 }
 
+.ResultDialog__ActionButtons {
+  display: flex;
+  flex-wrap: wrap; /* for divider to show in its own line */
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+
+  & > * {
+    display: inline-flex;
+    place-items: center;
+    font: inherit;
+    cursor: pointer;
+    height: 3rem;
+    text-decoration: none;
+    text-transform: uppercase;
+    border: none;
+    color: currentColor;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    background: hsl(150 50% 30% / 0.4);
+  }
+}
+
 .Timer {
   font-size: 2rem;
 }
@@ -178,7 +206,11 @@ h1 {
     background-color: var(--distribution-bar-bg);
     border-radius: 1px;
 
-    --distribution-bar-bg: hsl(0 0% 50% / 0.3);
+    --bar-bg-opacity: 0.7;
+    @nest [data-theme='dark'] & {
+      --bar-bg-opacity: 0.25;
+    }
+    --distribution-bar-bg: hsl(0 0% 50% / var(--bar-bg-opacity));
 
     &[data-current='true'] {
       --distribution-bar-bg: hsl(150 50% 30% / 0.4);

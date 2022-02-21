@@ -2,6 +2,7 @@ import { ComponentProps, Context, createContext, Fragment } from 'preact';
 import { StateUpdater, useCallback, useContext, useEffect, useRef, useState } from 'preact/hooks';
 import { dictionary } from './dictionary';
 import { answerList } from './answerList';
+import { getAnalyzerUrl } from './analyze';
 import './app.css';
 
 export const App = () => {
@@ -51,6 +52,7 @@ const useStoredState = <T,>(key: string, defaultValue: T) => {
 const GameContext = createContext<
   | {
       answer: string;
+      setAnswer: StateUpdater<string>;
       guesses: string[];
       setGuesses: StateUpdater<string[]>;
       showToast: () => void;
@@ -84,23 +86,35 @@ const useSafeContext = <T,>(context: Context<T>) => {
 const Game = () => {
   const [guesses, setGuesses] = useStoredState<string[]>('guesses', []);
   const [gameState, setGameState] = useStoredState<'won' | 'lost' | 'pending'>('gameState', 'pending');
-  const [streak, setStreak] = useStoredState<number>('streak', 0);
-  const [maxStreak, setMaxStreak] = useStoredState<number>('maxStreak', 0);
-  const [gamesPlayed, setGamesPlayed] = useStoredState<number>('gamesPlayed', 0);
-  const [gamesWon, setGamesWon] = useStoredState<number>('gamesWon', 0);
+  const [streak, setStreak] = useStoredState('streak', 0);
+  const [maxStreak, setMaxStreak] = useStoredState('maxStreak', 0);
+  const [gamesPlayed, setGamesPlayed] = useStoredState('gamesPlayed', 0);
+  const [gamesWon, setGamesWon] = useStoredState('gamesWon', 0);
   const [distribution, setDistribution] = useStoredState(
     'distribution',
     Object.fromEntries([...Array(6)].map((_, i) => [i + 1, 0]))
   );
 
-  const [answer, setAnswer] = useState('arsed');
+  const [answer, setAnswer] = useStoredState('answer', '');
   useEffect(() => {
     // 0-based index starts on Feb 17, 2022
     const origin = new Date(2022, 1, 17).getTime();
     const today = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
     const days = Math.floor((today - origin) / (1000 * 60 * 60 * 24));
-    setAnswer(answerList[days]);
-  }, []);
+    const todaysAnswer = answerList[days];
+
+    // reset the streak if previous answer doesn't match
+    if (![answer, answerList[Math.max(0, days - 1)]].includes(guesses[Math.max(0, guesses.length - 1)])) {
+      setStreak(0);
+    }
+
+    // new day, new word
+    if (todaysAnswer !== answer) {
+      setAnswer(todaysAnswer);
+      setGuesses([]);
+      setGameState('pending');
+    }
+  }, [answer, guesses, setAnswer, setGameState, setGuesses, setStreak]);
 
   const [isToastVisible, setIsToastVisible] = useState(false);
   const toastInterval = useRef<number | undefined>(undefined);
@@ -135,7 +149,7 @@ const Game = () => {
   }, [streak, setMaxStreak]);
 
   return (
-    <GameContext.Provider value={{ answer, guesses, setGuesses, showToast, gameState, setGameState }}>
+    <GameContext.Provider value={{ answer, guesses, setAnswer, setGuesses, showToast, gameState, setGameState }}>
       {isToastVisible && <Toast />}
       <GameStatsContext.Provider value={{ streak, maxStreak, gamesPlayed, gamesWon, distribution }}>
         <WordsGrid />
@@ -202,7 +216,7 @@ const ResultDialog = () => {
             {gamesPlayed} {'\n'} played
           </div>
           <div>
-            {Number((gamesWon / gamesPlayed) * 100).toFixed(0)} {'\n'} win %
+            {Number((gamesWon / Math.max(gamesPlayed, 1)) * 100).toFixed(0)} {'\n'} win %
           </div>
           <div>
             {streak} {'\n'} current streak
@@ -222,6 +236,8 @@ const ResultDialog = () => {
         <h2>Next wordel</h2>
         <Timer />
       </article>
+
+      <ResultDialogActionButtons />
     </dialog>
   ) : null;
 };
@@ -252,6 +268,8 @@ const Distribution = () => {
 };
 
 const Timer = () => {
+  const { setAnswer } = useSafeContext(GameContext);
+
   const getTimeDiff = () => {
     const now = new Date();
     const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 24);
@@ -272,10 +290,29 @@ const Timer = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const [hours, minutes, seconds] = time;
+    if (hours === '00' && minutes === '00' && seconds === '00') {
+      setAnswer(''); // trigger new game
+    }
+  }, [setAnswer, time]);
+
   return (
     <div class='Timer'>
       {time[0]}:{time[1]}:{time[2]}
     </div>
+  );
+};
+
+const ResultDialogActionButtons = () => {
+  const { guesses, answer } = useSafeContext(GameContext);
+  const wordsToAnalyze = guesses[Math.max(0, guesses.length - 1)] === answer ? guesses : [...guesses, answer];
+
+  return (
+    <section class='ResultDialog__ActionButtons'>
+      <button onClick={() => {}}>Share</button>
+      <a href={getAnalyzerUrl(wordsToAnalyze)}>Analyze</a>
+    </section>
   );
 };
 
