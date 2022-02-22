@@ -3,6 +3,7 @@ import { StateUpdater, useCallback, useContext, useEffect, useRef, useState } fr
 import { dictionary } from './dictionary';
 import { answerList } from './answerList';
 import { getAnalyzerUrl } from './analyze';
+import { getAltText, getEmojiGrid } from './share';
 import './app.css';
 
 export const App = () => {
@@ -119,14 +120,14 @@ const Game = () => {
   const justMounted = useRef(true);
 
   const [isToastVisible, setIsToastVisible] = useState(false);
-  const toastInterval = useRef<number | undefined>(undefined);
+  const toastTimeout = useRef<number | undefined>(undefined);
   const showToast = useCallback(() => {
     if (justMounted.current) {
       return;
     }
     setIsToastVisible(true);
-    clearTimeout(toastInterval.current);
-    toastInterval.current = setTimeout(() => {
+    clearTimeout(toastTimeout.current);
+    toastTimeout.current = setTimeout(() => {
       setIsToastVisible(false);
     }, 5000);
   }, []);
@@ -195,6 +196,8 @@ const ResultDialog = () => {
   const { gameState } = useSafeContext(GameContext);
   const { gamesPlayed, gamesWon, streak, maxStreak } = useSafeContext(GameStatsContext);
   const [isOpen, setIsOpen] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const justMounted = useRef(true);
@@ -213,6 +216,7 @@ const ResultDialog = () => {
     if (isOpen) {
       dialogRef.current?.showModal();
     } else {
+      setIsSharing(false);
       dialogRef.current?.close();
     }
   }, [isOpen]);
@@ -220,7 +224,7 @@ const ResultDialog = () => {
   return (
     <dialog class='ResultDialog' ref={dialogRef} hidden={!isOpen ? true : undefined} open={undefined}>
       <button class='ResultDialog__Close' onClick={() => setIsOpen(false)} aria-label='Close dialog' />
-      {isOpen && (
+      {isOpen && !isSharing && (
         <>
           <article>
             <h2>Statistics</h2>
@@ -250,9 +254,10 @@ const ResultDialog = () => {
             <Timer />
           </article>
 
-          <ResultDialogActionButtons />
+          <ResultDialogActionBar onShare={() => setIsSharing(true)} />
         </>
       )}
+      {isOpen && isSharing && <ResultDialogShare />}
     </dialog>
   );
 };
@@ -319,15 +324,64 @@ const Timer = () => {
   );
 };
 
-const ResultDialogActionButtons = () => {
+const ResultDialogActionBar = ({ onShare }: { onShare?: () => void }) => {
   const { guesses, answer } = useSafeContext(GameContext);
   const wordsToAnalyze = guesses[Math.max(0, guesses.length - 1)] === answer ? guesses : [...guesses, answer];
 
   return (
-    <section class='ResultDialog__ActionButtons'>
-      <button onClick={() => {}}>Share</button>
-      <a href={getAnalyzerUrl(wordsToAnalyze)}>Analyze</a>
+    <section class='ResultDialog__ActionBar'>
+      <button class='ResultDialog__Action' onClick={onShare}>
+        Share
+      </button>
+      <a class='ResultDialog__Action' href={getAnalyzerUrl(wordsToAnalyze)}>
+        Analyze
+      </a>
     </section>
+  );
+};
+
+const ResultDialogShare = () => {
+  const { guesses, answer } = useSafeContext(GameContext);
+  const gameNumber = answerList.indexOf(answer) + 243;
+  const altText = getAltText(guesses, answer, gameNumber);
+  const emojiGrid = getEmojiGrid(guesses, answer, gameNumber);
+
+  const [isCopiedMessageVisible, setIsCopiedMessageVisible] = useState(false);
+  const copiedMessageTimeout = useRef<number>(0);
+  const a11yLink = 'https://slate.com/culture/2022/02/wordle-word-game-results-accessibility-twitter.html';
+
+  return (
+    <article>
+      <h2>Share your result</h2>
+      <aside class='ResultDialog__ShareNote'>
+        Note: For <a href={a11yLink}>accessibility reasons</a>, instead of sharing the emojis as plain text, you should
+        take a screenshot of this grid and share it with the provided alt text.
+      </aside>
+      <pre class='ResultDialog__EmojiGrid' aria-label={altText}>
+        {emojiGrid}
+      </pre>
+      <div class='ResultDialog__ShareActions'>
+        <button
+          class='ResultDialog__Action'
+          onClick={async () => {
+            await navigator.clipboard.writeText(altText);
+            setIsCopiedMessageVisible(true);
+            clearTimeout(copiedMessageTimeout.current);
+            copiedMessageTimeout.current = setTimeout(() => setIsCopiedMessageVisible(false), 3000);
+          }}
+        >
+          Copy alt text
+        </button>
+        {isCopiedMessageVisible && (
+          <output class='ResultDialog__Copied'>
+            <span class='VisuallyHidden'>Copied to clipboard.</span>
+            <svg aria-hidden viewBox='0 0 24 24'>
+              <path fillRule='evenodd' d='m6 10l-2 2l6 6L20 8l-2-2l-8 8z' />
+            </svg>
+          </output>
+        )}
+      </div>
+    </article>
   );
 };
 

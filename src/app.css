@@ -178,26 +178,80 @@ h1 {
   }
 }
 
-.ResultDialog__ActionButtons {
+.ResultDialog__ActionBar {
   display: flex;
   flex-wrap: wrap; /* for divider to show in its own line */
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
+}
 
-  & > * {
-    display: inline-flex;
-    place-items: center;
-    font: inherit;
-    cursor: pointer;
-    height: 3rem;
+.ResultDialog__Action {
+  display: inline-flex;
+  place-items: center;
+  font: inherit;
+  cursor: pointer;
+  height: 3rem;
+  text-decoration: none;
+  text-transform: uppercase;
+  border: none;
+  color: currentColor;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  background: hsl(150 50% 30% / 0.4);
+}
+
+.ResultDialog__ShareNote {
+  font-style: italic;
+  font-size: 0.875rem;
+  padding: 1rem;
+
+  & > a {
     text-decoration: none;
-    text-transform: uppercase;
-    border: none;
-    color: currentColor;
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    background: hsl(150 50% 30% / 0.4);
+    color: hsl(244 74% 40%);
+
+    @nest [data-theme='dark'] & {
+      color: hsl(240 50% 80%);
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.ResultDialog__EmojiGrid {
+  font-size: 1.5rem;
+  user-select: none;
+  padding: 1rem;
+  margin: 0.5rem auto 1.5rem;
+}
+
+.ResultDialog__ShareActions {
+  position: relative;
+  padding: 0 2rem;
+}
+
+.ResultDialog__Copied {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-40%);
+
+  & > svg {
+    width: 2rem;
+    height: 2rem;
+    fill: hsl(150 50% 30% / 0.7);
+    animation: appear 0.5s ease-in-out;
+  }
+}
+
+@keyframes appear {
+  from {
+    clip-path: inset(0 100% 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
   }
 }
 
