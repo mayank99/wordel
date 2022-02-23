@@ -8,7 +8,7 @@ export function getEmojiGrid(guesses: string[], answer: string, gameNumber: numb
         .join('');
     })
     .join('\n');
-  return `wordel ${gameNumber} ${didWin ? guesses.length : 'X'}/6\n\n${emojis}`;
+  return `wordel ${gameNumber} ${didWin ? guesses.length : 'X'}/6\n${emojis}`;
 }
 
 export function getAltText(guesses: string[], answer: string, gameNumber: number) {
@@ -31,14 +31,14 @@ export function getAltText(guesses: string[], answer: string, gameNumber: number
     }`;
     return `Line ${index + 1}: ${describedLetters || 'All incorrect.'}`;
   });
-  return `wordel ${gameNumber}: ${didWin ? guesses.length : 'X'}/6\n${lines.join('\n')}`;
+  return `wordel ${gameNumber}: ${didWin ? guesses.length : 'X'}/6.\n${lines.join('\n')}`;
 }
 
-function ordinalNumber(index: number) {
+function ordinalNumber(i: number) {
   const suffix = ['th', 'st', 'nd', 'rd'];
-  const remainder = index % 100;
+  const remainder = i % 100;
   const ordinal = suffix[(remainder - 20) % 10] || suffix[remainder] || suffix[0];
-  return `${index + 1}${ordinal}`;
+  return `${i}${ordinal}`;
 }
 
 function joinWithAnd(words: string[]) {

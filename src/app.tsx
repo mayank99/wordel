@@ -155,7 +155,7 @@ const Game = () => {
 
   return (
     <GameContext.Provider value={{ answer, guesses, setAnswer, setGuesses, showToast, gameState, setGameState }}>
-      {isToastVisible && <Toast />}
+      <output role='status'>{isToastVisible && <Toast />}</output>
       <GameStatsContext.Provider value={{ streak, maxStreak, gamesPlayed, gamesWon, distribution }}>
         <WordsGrid />
         <ResultDialog />
@@ -167,23 +167,24 @@ const Game = () => {
 const Toast = () => {
   const { answer, guesses, gameState } = useSafeContext(GameContext);
 
+  // some of these were suggested by copilot lol
   const resultMessages = [
     'Are you sure you are human?',
     'Show-off!',
-    'You *are* a human!',
+    'You used your brain!',
     'Not bad',
     'That was okay, I guess',
     'Phew',
   ];
 
   return (
-    <output class='Toast' role='status'>
+    <div class='Toast'>
       {gameState === 'won'
         ? resultMessages[guesses.length - 1]
         : gameState === 'lost'
         ? `it was ${answer.toUpperCase()} smh`
         : 'Not in word list'}
-    </output>
+    </div>
   );
 };
 
@@ -199,6 +200,7 @@ const ResultDialog = () => {
   const [isSharing, setIsSharing] = useState(false);
 
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   const justMounted = useRef(true);
   useEffect(() => {
@@ -221,9 +223,15 @@ const ResultDialog = () => {
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (isSharing) {
+      closeRef.current?.focus();
+    }
+  }, [isSharing]);
+
   return (
     <dialog class='ResultDialog' ref={dialogRef} hidden={!isOpen ? true : undefined} open={undefined}>
-      <button class='ResultDialog__Close' onClick={() => setIsOpen(false)} aria-label='Close dialog' />
+      <button class='ResultDialog__Close' onClick={() => setIsOpen(false)} aria-label='Close dialog' ref={closeRef} />
       {isOpen && !isSharing && (
         <>
           <article>
@@ -267,9 +275,10 @@ const Distribution = () => {
   const { distribution } = useSafeContext(GameStatsContext);
 
   const maxFreq = Math.max(...Object.values(distribution));
+  const a11yLabel = `List where each term represents the number of guesses to complete the game, and the corresponding description is the number of games completed in that number of guesses.`;
 
   return (
-    <dl class='Distribution'>
+    <dl class='Distribution' aria-label={a11yLabel}>
       {Object.entries(distribution).map(([guessCount, frequency]) => (
         <Fragment key={guessCount}>
           <dt>
@@ -354,12 +363,17 @@ const ResultDialogShare = () => {
     <article>
       <h2>Share your result</h2>
       <aside class='ResultDialog__ShareNote'>
-        Note: For <a href={a11yLink}>accessibility reasons</a>, instead of sharing the emojis as plain text, you should
-        take a screenshot of this grid and share it with the provided alt text.
+        <p>
+          Note: For <a href={a11yLink}>accessibility reasons</a>, instead of sharing the emojis as plain text, you
+          should take a screenshot of this grid and share it with the provided alt text.
+        </p>
       </aside>
-      <pre class='ResultDialog__EmojiGrid' aria-label={altText}>
+
+      <div class='VisuallyHidden'>{altText}</div>
+      <div class='ResultDialog__EmojiGrid' aria-hidden>
         {emojiGrid}
-      </pre>
+      </div>
+
       <div class='ResultDialog__ShareActions'>
         <button
           class='ResultDialog__Action'
@@ -372,14 +386,13 @@ const ResultDialogShare = () => {
         >
           Copy alt text
         </button>
-        {isCopiedMessageVisible && (
-          <output class='ResultDialog__Copied'>
-            <span class='VisuallyHidden'>Copied to clipboard.</span>
-            <svg aria-hidden viewBox='0 0 24 24'>
-              <path fillRule='evenodd' d='m6 10l-2 2l6 6L20 8l-2-2l-8 8z' />
-            </svg>
-          </output>
-        )}
+        <output role='status'>
+          {isCopiedMessageVisible && (
+            <div class='ResultDialog__Copied'>
+              <span class='VisuallyHidden'>Copied to clipboard.</span>
+            </div>
+          )}
+        </output>
       </div>
     </article>
   );

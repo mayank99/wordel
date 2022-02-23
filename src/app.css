@@ -1,6 +1,13 @@
+:root {
+  --close-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.46 12L19 17.54V19h-1.46L12 13.46L6.46 19H5v-1.46L10.54 12L5 6.46V5h1.46L12 10.54L17.54 5H19v1.46L13.46 12Z"></path></svg>');
+  --check-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7L9 19l-5.5-5.5l1.41-1.41L9 16.17L19.59 5.59L21 7z"></path></svg>');
+}
+
 h1 {
   text-align: center;
   font-weight: normal;
+  font-family: system-ui, sans-serif;
+  font-size: 2.5rem;
 }
 
 .WordsGrid {
@@ -40,6 +47,19 @@ h1 {
 
   &[data-state='correct'] {
     background-color: var(--letter-bg-correct);
+    position: relative;
+
+    &:after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 0.75rem;
+      height: 0.75rem;
+      background-color: currentColor;
+      opacity: 0.6;
+      mask: var(--check-svg) no-repeat center center / contain;
+    }
   }
 
   &[data-state='misplaced'] {
@@ -174,7 +194,7 @@ h1 {
     position: absolute;
     inset: 0.5rem;
     background-color: currentColor;
-    mask: url('https://api.iconify.design/fe:close.svg?color=currentColor') no-repeat center center / contain;
+    mask: var(--close-svg) no-repeat center center / contain;
   }
 }
 
@@ -199,14 +219,23 @@ h1 {
   padding: 0.5rem 1rem;
   border-radius: 0.25rem;
   background: hsl(150 50% 30% / 0.4);
+  transition: background 0.2s ease-in-out;
+
+  &:hover {
+    background: hsl(150 50% 40% / 0.6);
+  }
+
+  &:active {
+    background: hsl(150 40% 25% / 0.4);
+  }
 }
 
 .ResultDialog__ShareNote {
   font-style: italic;
   font-size: 0.875rem;
-  padding: 1rem;
+  padding-inline: 1rem;
 
-  & > a {
+  & a {
     text-decoration: none;
     color: hsl(244 74% 40%);
 
@@ -221,10 +250,12 @@ h1 {
 }
 
 .ResultDialog__EmojiGrid {
+  white-space: pre-line;
   font-size: 1.5rem;
   user-select: none;
   padding: 1rem;
   margin: 0.5rem auto 1.5rem;
+  line-height: 1.5;
 }
 
 .ResultDialog__ShareActions {
@@ -236,14 +267,13 @@ h1 {
   position: absolute;
   right: 0;
   top: 50%;
-  transform: translateY(-40%);
-
-  & > svg {
-    width: 2rem;
-    height: 2rem;
-    fill: hsl(150 50% 30% / 0.7);
-    animation: appear 0.5s ease-in-out;
-  }
+  transform: translateY(-50%);
+  width: 2rem;
+  height: 2rem;
+  opacity: 0.6;
+  mask: var(--check-svg) no-repeat center center / contain;
+  background-color: hsl(150 50% 50% / 0.7);
+  animation: appear 0.6s ease-in-out;
 }
 
 @keyframes appear {
