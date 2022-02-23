@@ -1,9 +1,10 @@
-import { ComponentProps, Context, createContext, Fragment } from 'preact';
-import { StateUpdater, useCallback, useContext, useEffect, useRef, useState } from 'preact/hooks';
-import { dictionary } from './dictionary';
-import { answerList } from './answerList';
-import { getAnalyzerUrl } from './analyze';
-import { getAltText, getEmojiGrid } from './share';
+import { ComponentProps, createContext, Fragment } from 'preact';
+import { StateUpdater, useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import { useTheme, useStoredState, useSafeContext } from './utils/hooks';
+import { dictionary } from './utils/dictionary';
+import { answerList } from './utils/answerList';
+import { getAnalyzerUrl } from './utils/analyze';
+import { getAltText, getEmojiGrid } from './utils/share';
 import './app.css';
 
 export const App = () => {
@@ -17,37 +18,6 @@ export const App = () => {
       </main>
     </>
   );
-};
-
-const useTheme = () => {
-  const [theme, setTheme] = useState(() =>
-    window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-  );
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
-
-  useEffect(() => {
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ({ matches }) => {
-      setTheme(matches ? 'dark' : 'light');
-    });
-  }, []);
-
-  return theme;
-};
-
-const useStoredState = <T,>(key: string, defaultValue: T) => {
-  const [value, setValue] = useState<T>(() => {
-    const saved = localStorage.getItem(key);
-    return saved ? JSON.parse(saved) : defaultValue;
-  });
-
-  useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(value));
-  }, [key, value]);
-
-  return [value, setValue] as const;
 };
 
 const GameContext = createContext<
@@ -75,14 +45,6 @@ const GameStatsContext = createContext<
   | undefined
 >(undefined);
 GameStatsContext.displayName = 'GameStatsContext';
-
-const useSafeContext = <T,>(context: Context<T>) => {
-  const value = useContext(context);
-  if (value == undefined) {
-    throw new Error(`${context.displayName} must be used inside ${context.displayName}.Provider`);
-  }
-  return value!; // this cannot be undefined, so we can destructure from it
-};
 
 const Game = () => {
   const [guesses, setGuesses] = useStoredState<string[]>('guesses', []);
