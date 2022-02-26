@@ -163,27 +163,26 @@ const ResultDialog = () => {
 
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-
   const justMounted = useRef(true);
+
   useEffect(() => {
-    let delay = gameState === 'won' ? 1500 : 3500;
-    if (justMounted.current) {
-      delay = 500;
-      justMounted.current = false;
-    }
-    setTimeout(() => {
-      setIsOpen(gameState !== 'pending');
-    }, delay);
+    setIsOpen(gameState !== 'pending');
   }, [gameState]);
 
   useEffect(() => {
+    let delay = justMounted.current ? 500 : gameState === 'won' ? 1500 : 3500;
+
+    if (justMounted.current) {
+      justMounted.current = false;
+    }
+
     if (isOpen) {
-      dialogRef.current?.showModal();
+      setTimeout(() => dialogRef.current?.showModal(), delay);
     } else {
       setIsSharing(false);
       dialogRef.current?.close();
     }
-  }, [isOpen]);
+  }, [isOpen, gameState]);
 
   useEffect(() => {
     if (isSharing) {
