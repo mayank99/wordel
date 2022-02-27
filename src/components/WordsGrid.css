@@ -1,3 +1,8 @@
+.WordsGrid {
+  display: grid;
+  gap: 0.5rem;
+}
+
 .WordGuess {
   display: flex;
   gap: 0.5rem;
@@ -48,4 +53,11 @@
   &[data-state='misplaced'] {
     background-color: var(--letter-bg-misplaced);
   }
+}
+
+.HiddenInput {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
 }

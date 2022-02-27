@@ -3,9 +3,9 @@ import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { useTheme, useStoredState, useSafeContext } from './utils/hooks';
 import { answerList } from './utils/answerList';
 import { ResultDialog } from './components/ResultDialog';
+import { WordsGrid } from './components/WordsGrid';
 import { GameContext, GameStatsContext } from './contexts';
 import './app.css';
-import { WordGuess } from './components/WordGuess';
 
 export const App = () => {
   useTheme();
@@ -115,37 +115,19 @@ const Toast = () => {
 
   return (
     <div class='Toast'>
-      {gameState === 'won'
-        ? resultMessages[guesses.length - 1]
-        : gameState === 'lost'
-        ? `it was ${answer.toUpperCase()} smh`
-        : 'Not in word list'}
-    </div>
-  );
-};
-
-const WordsGrid = () => {
-  const { answer, guesses, showToast, setGameState } = useSafeContext(GameContext);
-
-  useEffect(() => {
-    if (guesses[Math.max(guesses.length - 1, 0)] === answer) {
-      setGameState('won');
-      showToast();
-    } else if (guesses.length === 6) {
-      setGameState('lost');
-      showToast();
-    }
-  }, [answer, guesses, showToast, setGameState]);
-
-  return (
-    <div class='WordsGrid'>
-      {[...Array(6)].map((_, i) => (
-        <WordGuess
-          key={i}
-          guess={guesses[i]}
-          isActive={i === guesses.length && answer !== guesses[Math.max(0, i - 1)]}
-        />
-      ))}
+      {gameState === 'won' ? (
+        <>
+          <span class='VisuallyHidden'>Game won.</span>
+          {resultMessages[guesses.length - 1]}
+        </>
+      ) : gameState === 'lost' ? (
+        <>
+          <span class='VisuallyHidden'>Game lost.</span>
+          it was {answer.toUpperCase()} smh
+        </>
+      ) : (
+        'Not in word list'
+      )}
     </div>
   );
 };
