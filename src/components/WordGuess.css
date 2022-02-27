@@ -1,0 +1,51 @@
+.WordGuess {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.Letter {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 0.25rem;
+  text-transform: uppercase;
+  display: grid;
+  place-content: center;
+  font: 500 1.5rem monospace;
+
+  --letter-bg-wrong: hsl(0 0% 30% / 0.5);
+  --letter-bg-correct: hsl(150 50% 30% / 0.4);
+  --letter-bg-misplaced: hsl(50 50% 50% / 0.4);
+
+  &[data-state='empty'] {
+    border: 1px solid hsl(0 0% 50% / 0.7);
+  }
+
+  &[data-state='active'] {
+    border: 1px solid currentColor;
+  }
+
+  &[data-state='wrong'] {
+    background-color: var(--letter-bg-wrong);
+  }
+
+  &[data-state='correct'] {
+    background-color: var(--letter-bg-correct);
+    position: relative;
+
+    &:after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 0.75rem;
+      height: 0.75rem;
+      background-color: currentColor;
+      opacity: 0.6;
+      mask: var(--check-svg) no-repeat center center / contain;
+    }
+  }
+
+  &[data-state='misplaced'] {
+    background-color: var(--letter-bg-misplaced);
+  }
+}

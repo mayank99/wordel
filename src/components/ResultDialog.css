@@ -1,0 +1,234 @@
+.ResultDialog {
+  &[hidden],
+  &:not([open]) {
+    display: none;
+  }
+
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-items: center;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  width: clamp(15rem, 95vw, 25rem);
+  box-shadow: 0 0 0.25rem hsl(0 0% 0% / 0.5);
+  backdrop-filter: blur(0.5rem);
+  background: var(--dialog-bg);
+  @media (prefers-reduced-motion: no-preference) {
+    animation: slide-in 0.5s ease-in-out;
+  }
+
+  --dialog-bg: hsl(0 0% 70% / 0.5);
+  --backdrop-bg: initial;
+
+  @nest [data-theme='dark'] & {
+    --dialog-bg: hsl(0 0% 15% / 0.8);
+  }
+
+  @supports not (backdrop-filter: blur(0.25rem)) {
+    --backdrop-bg: hsl(0 0% 0% / 0.5);
+    --dialog-bg: Canvas;
+    color: currentColor;
+  }
+
+  &::backdrop {
+    background: var(--backgrop-bg);
+    backdrop-filter: blur(0.25rem);
+  }
+
+  & > article {
+    display: grid;
+    justify-items: center;
+
+    & > h2 {
+      font-size: 1.25rem;
+      margin-block: 0;
+      font-weight: normal;
+      text-transform: uppercase;
+    }
+  }
+
+  --divider-color: hsl(0 0% 0% / 0.4);
+  @nest [data-theme='dark'] & {
+    --divider-color: hsl(0 0% 50% / 0.4);
+  }
+
+  & > * + * + * {
+    margin-block-start: 0.75rem;
+
+    &::before {
+      content: '';
+      margin-block-end: 0.75rem;
+      border: 0.5px solid var(--divider-color);
+      inline-size: 80%;
+    }
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+.ResultDialog__Stats {
+  display: flex;
+  justify-content: center;
+
+  & > * {
+    text-align: center;
+    max-width: 8ch;
+    overflow-wrap: break-word;
+    font-size: 0.875rem;
+    line-height: 1.1;
+
+    &::first-line {
+      font-size: 2rem;
+      line-height: 1.5;
+    }
+  }
+}
+
+.ResultDialog__Close {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  height: 2.5rem;
+  width: 2.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+
+  &:hover {
+    background: hsl(0 0% 50% / 0.3);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0.5rem;
+    background-color: currentColor;
+    mask: var(--close-svg) no-repeat center center / contain;
+  }
+}
+
+.ResultDialog__ActionBar {
+  display: flex;
+  flex-wrap: wrap; /* for divider to show in its own line */
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ResultDialog__Action {
+  display: inline-flex;
+  place-items: center;
+  font: inherit;
+  cursor: pointer;
+  height: 3rem;
+  text-decoration: none;
+  text-transform: uppercase;
+  border: none;
+  color: currentColor;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  background: hsl(150 50% 30% / 0.4);
+  transition: background 0.2s ease-in-out;
+
+  &:hover {
+    background: hsl(150 50% 40% / 0.6);
+  }
+
+  &:active {
+    background: hsl(150 40% 25% / 0.4);
+  }
+}
+
+.ResultDialog__ShareNote {
+  font-style: italic;
+  font-size: 0.875rem;
+  padding-inline: 1rem;
+
+  & a {
+    text-decoration: none;
+    color: hsl(244 74% 40%);
+
+    @nest [data-theme='dark'] & {
+      color: hsl(240 50% 80%);
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.ResultDialog__EmojiGrid {
+  white-space: pre-line;
+  font-size: 1.5rem;
+  user-select: none;
+  padding: 1rem;
+  margin: 0.5rem auto 1.5rem;
+  line-height: 1.5;
+}
+
+.ResultDialog__ShareActions {
+  position: relative;
+  padding: 0 2rem;
+}
+
+.ResultDialog__Copied {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2rem;
+  height: 2rem;
+  opacity: 0.6;
+  mask: var(--check-svg) no-repeat center center / contain;
+  background-color: hsl(150 50% 50% / 0.7);
+  animation: appear 0.6s ease-in-out;
+}
+
+@keyframes appear {
+  from {
+    clip-path: inset(0 100% 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.Timer {
+  font-size: 2rem;
+}
+
+.Distribution {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem;
+  justify-self: stretch;
+  padding-inline: 2rem;
+
+  & > :nth-child(even) {
+    min-width: 2ch;
+    padding-inline: 0.25rem;
+    margin-inline: 0;
+    text-align: right;
+    background-color: var(--distribution-bar-bg);
+    border-radius: 1px;
+
+    --bar-bg-opacity: 0.7;
+    @nest [data-theme='dark'] & {
+      --bar-bg-opacity: 0.25;
+    }
+    --distribution-bar-bg: hsl(0 0% 50% / var(--bar-bg-opacity));
+
+    &[data-current='true'] {
+      --distribution-bar-bg: hsl(150 50% 30% / 0.4);
+    }
+  }
+}
