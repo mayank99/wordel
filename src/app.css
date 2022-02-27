@@ -16,6 +16,7 @@ h1 {
   font-weight: normal;
   font-family: 'Give You Glory', system-ui, sans-serif;
   font-size: 2.5rem;
+  margin: 0;
 }
 
 .Toast {
