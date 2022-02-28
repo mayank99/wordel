@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     preact(),
     VitePWA({
-      includeAssets: ['favicon.ico', 'icon-192.png', 'icon-512.png', 'icon-192-maskable.png', 'icon-512-maskable.png'],
+      includeAssets: ['favicon.ico'],
       manifest: {
         name: 'wordel',
         short_name: 'wordel',
