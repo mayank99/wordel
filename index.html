@@ -14,5 +14,17 @@
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script type="module">
+      (async () => {
+        if (typeof HTMLDialogElement !== 'function') {
+          const css = document.createElement('link');
+          css.href = 'https://unpkg.com/dialog-polyfill@0.5.6/dist/dialog-polyfill.css';
+          document.head.appendChild(css).rel = 'stylesheet';
+
+          await import('https://unpkg.com/dialog-polyfill@0.5.6/dist/dialog-polyfill.js');
+          dialogPolyfill.registerDialog(document.querySelector('dialog'));
+        }
+      })();
+    </script>
   </body>
 </html>

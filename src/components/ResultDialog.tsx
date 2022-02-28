@@ -10,6 +10,7 @@ import './ResultDialog.css';
 declare interface HTMLDialogElement extends HTMLElement {
   showModal: () => void;
   close: () => void;
+  open: boolean;
 }
 
 export const ResultDialog = () => {
@@ -37,7 +38,10 @@ export const ResultDialog = () => {
       setTimeout(() => dialogRef.current?.showModal(), delay);
     } else {
       setIsSharing(false);
-      dialogRef.current?.close();
+
+      if (dialogRef.current?.open) {
+        dialogRef.current?.close?.();
+      }
     }
   }, [isOpen, gameState]);
 

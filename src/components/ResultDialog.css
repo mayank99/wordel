@@ -16,25 +16,31 @@
   box-shadow: 0 0 0.25rem hsl(0 0% 0% / 0.5);
   backdrop-filter: blur(0.5rem);
   background: var(--dialog-bg);
+  color: currentColor;
+
   @media (prefers-reduced-motion: no-preference) {
     animation: slide-in 0.5s ease-in-out;
   }
 
-  --dialog-bg: hsl(0 0% 70% / 0.5);
+  --dialog-bg: Canvas;
   --backdrop-bg: initial;
 
-  @nest [data-theme='dark'] & {
-    --dialog-bg: hsl(0 0% 15% / 0.8);
-  }
+  @supports (backdrop-filter: blur(0.25rem)) {
+    --dialog-bg: hsl(0 0% 0% / 0.5);
 
-  @supports not (backdrop-filter: blur(0.25rem)) {
-    --backdrop-bg: hsl(0 0% 0% / 0.5);
-    --dialog-bg: Canvas;
-    color: currentColor;
+    @nest [data-theme='dark'] & {
+      --dialog-bg: hsl(0 0% 15% / 0.8);
+    }
   }
 
   &::backdrop {
     background: var(--backgrop-bg);
+    backdrop-filter: blur(0.25rem);
+  }
+
+  /* polyfill */
+  & + .backdrop {
+    background: hsl(0 0% 0% / 0.5);
     backdrop-filter: blur(0.25rem);
   }
 
@@ -160,7 +166,9 @@
       color: hsl(240 50% 80%);
     }
 
-    &:hover {
+    &:hover,
+    &:focus {
+      outline-offset: 2px;
       text-decoration: underline;
     }
   }
