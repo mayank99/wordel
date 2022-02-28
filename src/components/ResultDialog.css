@@ -26,7 +26,7 @@
   --backdrop-bg: initial;
 
   @supports (backdrop-filter: blur(0.25rem)) {
-    --dialog-bg: hsl(0 0% 0% / 0.5);
+    --dialog-bg: hsl(0 0% 70% / 0.5);
 
     @nest [data-theme='dark'] & {
       --dialog-bg: hsl(0 0% 15% / 0.8);
