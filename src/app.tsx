@@ -5,9 +5,11 @@ import { answerList } from './utils/answerList';
 import { ResultDialog } from './components/ResultDialog';
 import { WordsGrid } from './components/WordsGrid';
 import { GameContext, GameStatsContext } from './contexts';
+import { useRegisterSW } from 'virtual:pwa-register/preact';
 import './app.css';
 
 export const App = () => {
+  useRegisterSW();
   useTheme();
 
   return (
