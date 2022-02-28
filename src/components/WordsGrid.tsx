@@ -70,14 +70,13 @@ export const WordGuess = ({ index, isActive = false }: { index: number; isActive
     setCurrentGuess('');
   };
 
-  const [disabled, setDisabled] = useState(false);
+  const [disabled, setDisabled] = useState(true);
   useEffect(() => {
     if (isActive) {
-      const delay = motionOk.current ? 2500 : 0;
-      setDisabled(true);
+      const delay = motionOk.current && index > 0 ? 2500 : 0;
       setTimeout(() => setDisabled(false), delay); // wait for animation to complete
     }
-  }, [isActive]);
+  }, [index, isActive]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -111,7 +110,7 @@ export const WordGuess = ({ index, isActive = false }: { index: number; isActive
             return 'active';
           }
 
-          if (!guess || !answer || !letter || disabled) return 'empty';
+          if (!guess || !answer || !letter) return 'empty';
 
           const isDuplicateLetter = [...guess].filter((l) => l === letter).length > 1;
           const answerHasMultiple = [...answer].filter((l) => l === letter).length > 1;
