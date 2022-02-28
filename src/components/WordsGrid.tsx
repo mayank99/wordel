@@ -74,7 +74,7 @@ export const WordGuess = ({ index, isActive = false }: { index: number; isActive
   useEffect(() => {
     if (isActive) {
       const delay = motionOk.current && index > 0 ? 2500 : 0;
-      setTimeout(() => setDisabled(false), delay); // wait for animation to complete
+      window.setTimeout(() => setDisabled(false), delay); // wait for animation to complete
     }
   }, [index, isActive]);
 

@@ -63,7 +63,7 @@ const Game = () => {
     }
     setIsToastVisible(true);
     clearTimeout(toastTimeout.current);
-    toastTimeout.current = setTimeout(() => {
+    toastTimeout.current = window.setTimeout(() => {
       setIsToastVisible(false);
     }, 5000);
   }, []);

@@ -35,7 +35,7 @@ export const ResultDialog = () => {
     }
 
     if (isOpen) {
-      setTimeout(() => dialogRef.current?.showModal(), delay);
+      window.setTimeout(() => dialogRef.current?.showModal(), delay);
     } else {
       setIsSharing(false);
 
@@ -203,7 +203,7 @@ export const ResultDialogShare = () => {
             await navigator.clipboard.writeText(altText);
             setIsCopiedMessageVisible(true);
             clearTimeout(copiedMessageTimeout.current);
-            copiedMessageTimeout.current = setTimeout(() => setIsCopiedMessageVisible(false), 3000);
+            copiedMessageTimeout.current = window.setTimeout(() => setIsCopiedMessageVisible(false), 3000);
           }}
         >
           Copy alt text
