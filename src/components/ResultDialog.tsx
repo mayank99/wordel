@@ -27,7 +27,7 @@ export const ResultDialog = () => {
   }, [gameState]);
 
   useEffect(() => {
-    let delay = justMounted.current ? 500 : gameState === 'won' ? 1500 : 3500;
+    let delay = justMounted.current ? 500 : gameState === 'won' ? 2500 : 3500;
 
     if (justMounted.current) {
       justMounted.current = false;
