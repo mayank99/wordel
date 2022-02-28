@@ -47,6 +47,7 @@ export const WordGuess = ({ index, isActive = false }: { index: number; isActive
   const { answer, guesses, setGuesses, showToast } = useSafeContext(GameContext);
   const [currentGuess, setCurrentGuess] = useState('');
   const guess = guesses[index];
+  const motionOk = useRef(window.matchMedia('(prefers-reduced-motion: no-preference)').matches);
 
   const handleInput = ({ currentTarget }: JSX.TargetedEvent<HTMLInputElement, Event>) => {
     if (
@@ -69,9 +70,18 @@ export const WordGuess = ({ index, isActive = false }: { index: number; isActive
     setCurrentGuess('');
   };
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [disabled, setDisabled] = useState(false);
   useEffect(() => {
     if (isActive) {
+      const delay = motionOk.current ? 2500 : 0;
+      setDisabled(true);
+      setTimeout(() => setDisabled(false), delay); // wait for animation to complete
+    }
+  }, [isActive]);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (isActive && !disabled) {
       inputRef.current?.focus();
     }
   });
@@ -90,17 +100,18 @@ export const WordGuess = ({ index, isActive = false }: { index: number; isActive
             enterkeyhint='done'
             autoFocus
             ref={inputRef}
+            disabled={disabled}
           />
         </form>
       )}
       {!isActive && <span class='VisuallyHidden'>Line {index + 1}: </span>}
       {[...Array(5)].map((_, i) => {
         const letterState = ((letter: string) => {
-          if (isActive) {
+          if (isActive && !disabled) {
             return 'active';
           }
 
-          if (!guess || !answer || !letter) return 'empty';
+          if (!guess || !answer || !letter || disabled) return 'empty';
 
           const isDuplicateLetter = [...guess].filter((l) => l === letter).length > 1;
           const answerHasMultiple = [...answer].filter((l) => l === letter).length > 1;
@@ -114,7 +125,12 @@ export const WordGuess = ({ index, isActive = false }: { index: number; isActive
         })(guess?.[i] ?? '');
 
         return (
-          <Letter key={i} state={letterState} aria-hidden={isActive ? true : undefined}>
+          <Letter
+            key={i}
+            state={letterState}
+            aria-hidden={isActive ? true : undefined}
+            style={{ '--delay': `${i * 0.5}s` }}
+          >
             {currentGuess[i] ?? guess?.[i]}
             {!['active', 'empty'].includes(letterState) && <span class='VisuallyHidden'>({letterState})</span>}
           </Letter>
@@ -130,7 +146,7 @@ const Letter = ({
   ...rest
 }: { state?: 'empty' | 'active' | 'wrong' | 'misplaced' | 'correct' } & ComponentProps<'div'>) => {
   return (
-    <div class='Letter' data-state={state} {...rest}>
+    <div class='Letter' data-state={state !== 'empty' ? state : undefined} {...rest}>
       {children}
     </div>
   );
