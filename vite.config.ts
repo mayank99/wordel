@@ -8,6 +8,7 @@ export default defineConfig({
     preact(),
     VitePWA({
       includeAssets: ['favicon.ico'],
+      registerType: 'autoUpdate',
       manifest: {
         name: 'wordel',
         short_name: 'wordel',
