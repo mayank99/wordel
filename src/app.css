@@ -11,12 +11,23 @@
   --check-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7L9 19l-5.5-5.5l1.41-1.41L9 16.17L19.59 5.59L21 7z"></path></svg>');
 }
 
-h1 {
+.Heading {
   text-align: center;
   font-weight: normal;
   font-family: 'Give You Glory', system-ui, sans-serif;
   font-size: 2.5rem;
   margin: 0;
+  position: relative;
+}
+
+.Heading__DuplicateLetter {
+  position: absolute;
+  inset: 0.25rem auto auto 0.25rem;
+  opacity: 0.25;
+
+  @nest [data-theme='dark'] & {
+    opacity: 0.5;
+  }
 }
 
 .Toast {

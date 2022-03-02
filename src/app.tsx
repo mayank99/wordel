@@ -12,14 +12,7 @@ export const App = () => {
   useRegisterSW();
   useTheme();
 
-  return (
-    <>
-      <h1>wordel</h1>
-      <main>
-        <Game />
-      </main>
-    </>
-  );
+  return <Game />;
 };
 
 const Game = () => {
@@ -94,11 +87,34 @@ const Game = () => {
   return (
     <GameContext.Provider value={{ answer, guesses, setAnswer, setGuesses, showToast, gameState, setGameState }}>
       <output role='status'>{isToastVisible && <Toast />}</output>
-      <GameStatsContext.Provider value={{ streak, maxStreak, gamesPlayed, gamesWon, distribution }}>
-        <WordsGrid />
-        <ResultDialog />
-      </GameStatsContext.Provider>
+      <Heading />
+      <main>
+        <GameStatsContext.Provider value={{ streak, maxStreak, gamesPlayed, gamesWon, distribution }}>
+          <WordsGrid />
+          <ResultDialog />
+        </GameStatsContext.Provider>
+      </main>
     </GameContext.Provider>
+  );
+};
+
+const Heading = () => {
+  const { answer } = useSafeContext(GameContext);
+
+  const answerHasDuplicates = [...answer].some((letter, index) => answer.indexOf(letter) !== index);
+
+  return (
+    <>
+      <h1 class='Heading'>
+        wordel
+        {answerHasDuplicates && (
+          <span class='Heading__DuplicateLetter' aria-hidden>
+            w
+          </span>
+        )}
+      </h1>
+      {answerHasDuplicates && <span class='VisuallyHidden'>Today's word has a duplicate letter</span>}
+    </>
   );
 };
 
