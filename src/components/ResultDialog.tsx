@@ -28,14 +28,13 @@ export const ResultDialog = () => {
   }, [gameState]);
 
   useEffect(() => {
-    let delay = justMounted.current ? 500 : gameState === 'won' ? 2500 : 3500;
-
     if (justMounted.current) {
       justMounted.current = false;
+      return;
     }
 
     if (isOpen) {
-      window.setTimeout(() => dialogRef.current?.showModal(), delay);
+      window.setTimeout(() => dialogRef.current?.showModal(), gameState === 'won' ? 2500 : 3500);
     } else {
       setIsSharing(false);
 
