@@ -1,20 +1,19 @@
 import { Context } from 'preact';
-import { useState, useEffect, useContext } from 'preact/hooks';
+import { useState, useEffect, useContext, useMemo } from 'preact/hooks';
 
 export const useTheme = () => {
-  const [theme, setTheme] = useState(() =>
-    window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-  );
+  const prefersDarkQuery = useMemo(() => window.matchMedia?.('(prefers-color-scheme: dark)'), []);
+  const [theme, setTheme] = useState(() => (prefersDarkQuery.matches ? 'dark' : 'light'));
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
   useEffect(() => {
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ({ matches }) => {
-      setTheme(matches ? 'dark' : 'light');
-    });
-  }, []);
+    const changeTheme = ({ matches }: MediaQueryListEvent) => void setTheme(matches ? 'dark' : 'light');
+    prefersDarkQuery?.addEventListener('change', changeTheme);
+    return () => prefersDarkQuery?.removeEventListener('change', changeTheme);
+  }, [prefersDarkQuery]);
 
   return theme;
 };
