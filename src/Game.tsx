@@ -1,21 +1,14 @@
 import { Fragment } from 'preact';
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
-import { useTheme, useStoredState, useSafeContext } from './utils/hooks';
+import { useStoredState, useSafeContext } from './utils/hooks';
 import { answerList } from './utils/answerList';
 import { ResultDialog } from './components/ResultDialog';
 import { WordsGrid } from './components/WordsGrid';
+import { Toast } from './components/Toast';
 import { GameContext, GameStatsContext } from './contexts';
-import { useRegisterSW } from 'virtual:pwa-register/preact';
-import './app.css';
+import './Game.css';
 
-export const App = () => {
-  useRegisterSW();
-  useTheme();
-
-  return <Game />;
-};
-
-const Game = () => {
+export const Game = () => {
   const [guesses, setGuesses] = useStoredState<string[]>('guesses', []);
   const [gameState, setGameState] = useStoredState<'won' | 'lost' | 'pending'>('gameState', 'pending');
   const [streak, setStreak] = useStoredState('streak', 0);
@@ -86,7 +79,7 @@ const Game = () => {
 
   return (
     <GameContext.Provider value={{ answer, guesses, setAnswer, setGuesses, showToast, gameState, setGameState }}>
-      <output role='status'>{isToastVisible && <Toast />}</output>
+      <Toast visible={isToastVisible} />
       <Heading />
       <main>
         <GameStatsContext.Provider value={{ streak, maxStreak, gamesPlayed, gamesWon, distribution }}>
@@ -118,36 +111,4 @@ const Heading = () => {
   );
 };
 
-const Toast = () => {
-  const { answer, guesses, gameState } = useSafeContext(GameContext);
-
-  // some of these were suggested by copilot lol
-  const resultMessages = [
-    'Are you sure you are human?',
-    'Show-off!',
-    'You used your brain!',
-    'Not bad',
-    'That was okay, I guess',
-    'Phew',
-  ];
-
-  return (
-    <div class='Toast'>
-      {gameState === 'won' ? (
-        <>
-          <span class='VisuallyHidden'>Game won.</span>
-          {resultMessages[guesses.length - 1]}
-        </>
-      ) : gameState === 'lost' ? (
-        <>
-          <span class='VisuallyHidden'>Game lost.</span>
-          it was {answer.toUpperCase()} smh
-        </>
-      ) : (
-        'Not in word list'
-      )}
-    </div>
-  );
-};
-
-export default App;
+export default Game;

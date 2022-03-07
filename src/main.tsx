@@ -1,5 +1,14 @@
-import { render } from 'preact'
-import { App } from './app'
-import './index.css'
+import { render } from 'preact';
+import { Game } from './Game';
+import { useTheme } from './utils/hooks';
+import { useRegisterSW } from 'virtual:pwa-register/preact';
+import './index.css';
 
-render(<App />, document.getElementById('app')!)
+const App = () => {
+  useRegisterSW();
+  useTheme();
+
+  return <Game />;
+};
+
+render(<App />, document.getElementById('app')!);
