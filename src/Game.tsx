@@ -28,13 +28,12 @@ export const Game = () => {
     const days = Math.floor((today - origin) / (1000 * 60 * 60 * 24));
     const todaysAnswer = answerList[days];
 
-    // reset the streak if previous answer doesn't match
-    if (![answer, answerList[Math.max(0, days - 1)]].includes(guesses[Math.max(0, guesses.length - 1)])) {
-      setStreak(0);
-    }
-
     // new day, new word
     if (todaysAnswer !== answer) {
+      // reset the streak if previous day's answer doesn't match
+      if (answerList[Math.max(0, days - 1)] !== guesses[Math.max(0, guesses.length - 1)]) {
+        setStreak(0);
+      }
       setAnswer(todaysAnswer);
       setGuesses([]);
       setGameState('pending');
