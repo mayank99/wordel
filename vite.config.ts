@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     preact(),
     VitePWA({
-      includeAssets: ['favicon.ico'],
+      includeAssets: ['favicon.ico', 'Give-You-Glory.min.woff2'],
       registerType: 'autoUpdate',
       manifest: {
         name: 'wordel',
