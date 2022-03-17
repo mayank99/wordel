@@ -50,10 +50,10 @@ export const ResultDialog = () => {
     }
   }, [isSharing]);
 
-  return (
+  return isOpen ? (
     <dialog class='ResultDialog' ref={dialogRef} hidden={!isOpen ? true : undefined} open={undefined}>
       <button class='ResultDialog__Close' onClick={() => setIsOpen(false)} aria-label='Close dialog' ref={closeRef} />
-      {isOpen && !isSharing && (
+      {!isSharing && (
         <>
           <article>
             <h2>Statistics</h2>
@@ -86,9 +86,9 @@ export const ResultDialog = () => {
           <ResultDialogActionBar onShare={() => setIsSharing(true)} />
         </>
       )}
-      {isOpen && isSharing && <ResultDialogShare />}
+      {isSharing && <ResultDialogShare />}
     </dialog>
-  );
+  ) : null;
 };
 
 export const Distribution = () => {
