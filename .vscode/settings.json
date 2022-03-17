@@ -1,0 +1,9 @@
+{
+  "explorer.experimental.fileNesting.enabled": true,
+  "explorer.experimental.fileNesting.expand": false,
+  "explorer.experimental.fileNesting.patterns": {
+    "*.tsx": "$(capture).css",
+    "types.d.ts": "*.d.ts",
+    "README.md": "*.md"
+  }
+}
