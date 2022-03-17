@@ -10,4 +10,5 @@
   padding: 1rem;
   background-color: hsl(0 0% 50% / 0.3);
   border-radius: 0.5rem;
+  border: 1px solid transparent;
 }

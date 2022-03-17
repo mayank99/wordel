@@ -32,6 +32,11 @@
     background: var(--_bg);
     border: 1px solid var(--_bg);
     z-index: -1;
+
+    forced-color-adjust: none;
+    @media (forced-colors: active) {
+      opacity: 0.25;
+    }
   }
 
   &[data-state='correct'],
@@ -65,6 +70,7 @@
       background-color: currentColor;
       opacity: 0.6;
       mask: var(--check-svg) no-repeat center center / contain;
+      forced-color-adjust: none;
       @media (prefers-reduced-motion: no-preference) {
         animation: clip-in 0.5s var(--delay) ease-in-out both;
       }
