@@ -8,7 +8,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@prefresh/vite": "^2.2.6",
     "preact": "^10.5.15"
   },
   "devDependencies": {
