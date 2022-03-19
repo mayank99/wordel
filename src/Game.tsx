@@ -22,11 +22,11 @@ export const Game = () => {
 
   const [answer, setAnswer] = useStoredState('answer', '');
   useEffect(() => {
-    // 0-based index starts on Feb 17, 2022
-    const origin = new Date(2022, 1, 17).getTime();
+    // first word starts on Mar 18, 2022 (wordle 272)
+    const origin = new Date(2022, 2, 18).getTime();
     const today = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
     const days = Math.floor((today - origin) / (1000 * 60 * 60 * 24));
-    const todaysAnswer = answerList[days];
+    const todaysAnswer = answerList[days];  
 
     // new day, new word
     if (todaysAnswer !== answer) {

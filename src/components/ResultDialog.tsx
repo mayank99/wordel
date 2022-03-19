@@ -172,7 +172,7 @@ export const ResultDialogActionBar = ({ onShare }: { onShare?: () => void }) => 
 
 export const ResultDialogShare = () => {
   const { guesses, answer } = useSafeContext(GameContext);
-  const gameNumber = answerList.indexOf(answer) + 243;
+  const gameNumber = answerList.indexOf(answer) + 272;
   const altText = getAltText(guesses, answer, gameNumber);
   const emojiGrid = getEmojiGrid(guesses, answer, gameNumber);
 
