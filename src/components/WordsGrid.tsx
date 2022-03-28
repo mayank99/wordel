@@ -116,8 +116,9 @@ export const WordGuess = ({ index, isActive = false }: { index: number; isActive
             return 'correct';
           }
 
-          const isDuplicateLetter = [...guess].filter((l) => l === letter).length > 1;
           const answerHasMultiple = [...answer].filter((l) => l === letter).length > 1;
+          const isDuplicateLetter = [...guess].filter((l) => l === letter).length > 1;
+          const duplicateIndices = [...guess].flatMap((l, _i) => isDuplicateLetter && l === letter ? [_i] : []);
 
           if (answer.includes(letter)) {
             // if there is no duplicate, or if the answer has multiple instances of this letter, then we show yellow
@@ -126,18 +127,14 @@ export const WordGuess = ({ index, isActive = false }: { index: number; isActive
             }
 
             // if the answer doesn't have multiple instances, then skip this if the other instance is corrrect
-            [...Array(5)].forEach((_, _i) => {
-              if (answer[_i] === guess[_i] && answer[_i] === letter) {
-                return 'wrong'; // green should already have been covered above
-              }
-            });
+            if (duplicateIndices.some((_i) => guess[_i] === answer[_i])) {
+              return 'wrong';
+            }
 
             // if the other instance is not correct, then we only show yellow on the first instance
-            [...Array(5)].forEach((_, _i) => {
-              if (answer[_i] === guess[_i] && _i === i) {
-                return 'misplaced';
-              }
-            });
+            if (i === duplicateIndices[0]) {
+              return 'misplaced';
+            }
           }
 
           return 'wrong';
