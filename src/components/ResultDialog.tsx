@@ -2,7 +2,7 @@ import { Fragment } from 'preact';
 import { useState, useRef, useEffect } from 'preact/hooks';
 import { GameContext, GameStatsContext } from '../contexts';
 import { getAnalyzerUrl } from '../utils/analyze';
-import { answerList } from '../utils/answerList';
+import { answerList, firstGameNumber } from '../utils/answerList';
 import { useSafeContext } from '../utils/hooks';
 import { getAltText, getEmojiGrid } from '../utils/share';
 import './ResultDialog.css';
@@ -172,7 +172,7 @@ export const ResultDialogActionBar = ({ onShare }: { onShare?: () => void }) => 
 
 export const ResultDialogShare = () => {
   const { guesses, answer } = useSafeContext(GameContext);
-  const gameNumber = answerList.indexOf(answer) + 272;
+  const gameNumber = answerList.indexOf(answer) + firstGameNumber;
   const altText = getAltText(guesses, answer, gameNumber);
   const emojiGrid = getEmojiGrid(guesses, answer, gameNumber);
 

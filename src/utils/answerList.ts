@@ -1,6 +1,8 @@
+export const firstGameNumber = 271;
+
 /**
- * Same list as NYT wordle, except the first 272 entries are commented out
- * so that the first index is that of wordle 272 on Mar 17, 2022.
+ * Same list as NYT wordle, except the first 271 entries are commented out
+ * so that the first index is that of wordle 271 on Mar 17, 2022.
  */
 export const answerList = [
   // 'cigar',

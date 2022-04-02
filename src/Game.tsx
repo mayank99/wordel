@@ -22,7 +22,7 @@ export const Game = () => {
 
   const [answer, setAnswer] = useStoredState('answer', '');
   useEffect(() => {
-    // first word starts on Mar 17, 2022 (wordle 272)
+    // first word starts on Mar 17, 2022 (wordle 271)
     const epoch = new Date(2022, 2, 17).getTime();
     const today = new Date(new Date().setHours(0, 0, 0, 1)).getTime();
     const days = Math.floor((today - epoch) / (1000 * 60 * 60 * 24));
