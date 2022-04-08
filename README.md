@@ -1,6 +1,8 @@
 # wordel
 
-A super simple wordle clone created using preact and vanilla CSS, with no external dependencies.
+A simple wordle clone created using preact and vanilla CSS, with no external dependencies.
+
+Try it at: [wordel.app](https://www.wordel.app)
 
 ## Features
 
