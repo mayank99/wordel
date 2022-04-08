@@ -51,42 +51,50 @@ export const ResultDialog = () => {
   }, [isSharing]);
 
   return isOpen ? (
-    <dialog class='ResultDialog' ref={dialogRef} hidden={!isOpen ? true : undefined} open={undefined}>
-      <button class='ResultDialog__Close' onClick={() => setIsOpen(false)} aria-label='Close dialog' ref={closeRef} />
-      {!isSharing && (
-        <>
-          <article>
-            <h2>Statistics</h2>
-            <section class='ResultDialog__Stats'>
-              <div>
-                {gamesPlayed} {'\n'} played
-              </div>
-              <div>
-                {Number((gamesWon / Math.max(gamesPlayed, 1)) * 100).toFixed(0)} {'\n'} win %
-              </div>
-              <div>
-                {streak} {'\n'} current streak
-              </div>
-              <div>
-                {maxStreak} {'\n'} max streak
-              </div>
-            </section>
-          </article>
+    <dialog
+      class='ResultDialog'
+      ref={dialogRef}
+      onClick={() => setIsOpen(false)}
+      hidden={!isOpen ? true : undefined}
+      open={undefined}
+    >
+      <div class='ResultDialog__Content' onClick={(e) => e.stopPropagation()}>
+        <button class='ResultDialog__Close' onClick={() => setIsOpen(false)} aria-label='Close dialog' ref={closeRef} />
+        {!isSharing && (
+          <>
+            <article>
+              <h2>Statistics</h2>
+              <section class='ResultDialog__Stats'>
+                <div>
+                  {gamesPlayed} {'\n'} played
+                </div>
+                <div>
+                  {Number((gamesWon / Math.max(gamesPlayed, 1)) * 100).toFixed(0)} {'\n'} win %
+                </div>
+                <div>
+                  {streak} {'\n'} current streak
+                </div>
+                <div>
+                  {maxStreak} {'\n'} max streak
+                </div>
+              </section>
+            </article>
 
-          <article>
-            <h2>Guess distribution</h2>
-            <Distribution />
-          </article>
+            <article>
+              <h2>Guess distribution</h2>
+              <Distribution />
+            </article>
 
-          <article>
-            <h2>Next wordel</h2>
-            <Timer />
-          </article>
+            <article>
+              <h2>Next wordel</h2>
+              <Timer />
+            </article>
 
-          <ResultDialogActionBar onShare={() => setIsSharing(true)} />
-        </>
-      )}
-      {isSharing && <ResultDialogShare />}
+            <ResultDialogActionBar onShare={() => setIsSharing(true)} />
+          </>
+        )}
+        {isSharing && <ResultDialogShare />}
+      </div>
     </dialog>
   ) : null;
 };
