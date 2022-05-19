@@ -164,8 +164,9 @@
   padding-inline: 1rem;
 
   & a {
-    text-decoration: none;
     color: hsl(244 74% 40%);
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
 
     @nest [data-theme='dark'] & {
       color: hsl(240 50% 80%);
@@ -174,7 +175,8 @@
     &:hover,
     &:focus {
       outline-offset: 2px;
-      text-decoration: underline;
+      text-underline-offset: 0px;
+      text-decoration-thickness: 2px;
     }
   }
 }
