@@ -6,6 +6,17 @@
 .WordGuess {
   display: flex;
   gap: clamp(0.25rem, 2vmin, 0.5rem);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+
+  &:focus-within {
+    @media (prefers-contrast: more) {
+      outline: 1px dotted Highlight;
+    }
+    @media (forced-colors: active) {
+      outline: 1px dotted Highlight;
+    }
+  }
 }
 
 .Letter {
@@ -41,6 +52,28 @@
 
   &[data-state='active'] {
     --_border: 1px solid currentColor;
+
+    /* blinking cursor after the last letter */
+    &:where(:empty:not(:empty + :empty)),
+    &:where(:last-of-type:not(:empty)) {
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        bottom: 0.75ex;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 1em;
+        height: 1px;
+        background-color: currentColor;
+        animation: blinky 1.2s ease infinite;
+
+        @media (prefers-reduced-motion: reduce) {
+          animation-duration: 3s;
+        }
+      }
+    }
   }
 
   &[data-state='wrong'] {
@@ -84,6 +117,16 @@
 @keyframes clip-in-bg {
   from {
     background-position: calc(var(--_size) * -1) 0;
+  }
+}
+
+@keyframes blinky {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
   }
 }
 
